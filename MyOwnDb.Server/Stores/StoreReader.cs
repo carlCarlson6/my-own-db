@@ -43,4 +43,22 @@ public class StoreReader(AppDbContext db)
         
         return result != null ? JsonSerializer.Deserialize<JsonObject>(result) : null;
     }
+
+    public async Task<List<JsonObject>> Query(StoreId storeId, string queryPath, string value, CancellationToken ct)
+    {
+        await using var connection = new SqliteConnection(db.Database.GetDbConnection().ConnectionString);
+        await connection.OpenAsync(ct);
+
+        var result = await connection.QueryFirstOrDefaultAsync<string>(
+            sql: $"""
+                  select 
+                      payload, 
+                      json_extract(payload, '$.{queryPath}') as to_match 
+                  from '{storeId}' 
+                  where to_match=@to_match
+                  """, 
+            param: new { to_match = value });
+
+        return [];
+    }
 }

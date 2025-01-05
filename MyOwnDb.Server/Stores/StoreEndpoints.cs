@@ -25,6 +25,8 @@ public static class StoreEndpoints
         
         app.MapGet("api/db/store/{storeName}/records/{recordId}", GetStoreRecord);
         
+        app.MapPost("/api/db/store/{storeName}/query", QueryStore);
+        
         return app;
     }
     
@@ -85,7 +87,20 @@ public static class StoreEndpoints
             ? Results.NotFound() 
             : Results.Ok(maybeRecord);
     }
+    
+    private static async Task<IResult> QueryStore(
+        [FromRoute(Name = nameof(storeName))] string storeName,
+        [FromBody] QueryStoreRequest request,
+        [FromServices] StoreReader reader,
+        HttpContext ctx)
+    {
+        // TODO check path does not contain sql
+        var records = await reader
+            .Query(new StoreId(storeName, ctx.GetTenantId()), request.Path, request.Value, ctx.RequestAborted);
+        return Results.Ok(records);
+    }
 }
 
 public record CreateStoreRequest(string NameIdentifier);
 public record AddRecordToStore(JsonObject Payload, string Collection = "");
+public record QueryStoreRequest(string Path, string Value);
