@@ -6,7 +6,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services
     .AddEndpointsApiExplorer()
     .AddSwaggerGen()
-    .AddTransient<AppDbContext>();
+    .AddTransient<AppDbContext>()
+    .AddTransient<StoreWriter>()
+    .AddTransient<StoreReader>();
 
 var app = builder.Build();
 

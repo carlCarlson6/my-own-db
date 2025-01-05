@@ -1,11 +1,6 @@
 using System.Text.Json.Nodes;
-using Dapper;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.Sqlite;
-using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 using static System.String;
-using static System.Text.Json.JsonSerializer;
 
 namespace MyOwnDb.Server.Stores;
 
@@ -15,82 +10,80 @@ public static class StoreEndpoints
     {
         app.MapPost("/api/db/store", CreateStore);
         
-        app.MapPost("/api/db/store/{storeId}", AddRecordToStore);
-        app.MapPut("/api/db/store/{storeId}", AddRecordToStore);
-        app.MapPatch("/api/db/store/{storeId}", AddRecordToStore);
+        app.MapPost("/api/db/store/{storeName}", AddRecordToStore);
+        app.MapPut("/api/db/store/{storeName}", AddRecordToStore);
+        app.MapPatch("/api/db/store/{storeName}", AddRecordToStore);
 
-        app.MapGet("/api/db/store/{storeId}/collections", (
-            [FromRoute(Name = nameof(storeId))] string storeId,
-            [FromServices] AppDbContext db,
-            HttpContext ctx) => GetStoreRecordsByCollection(storeId, Empty, db, ctx)
-        );
-        app.MapGet("/api/db/store/{storeId}/collections/{collection}", GetStoreRecordsByCollection);
+        app.MapGet("api/db/store/{storeName}", GetAllStoreRecords);
         
-        app.MapGet("api/db/store/{storeId}/records/{recordId}", GetStoreRecord);
+        app.MapGet("/api/db/store/{storeName}/collections", (
+            [FromRoute(Name = nameof(storeName))] string storeName,
+            [FromServices] StoreReader reader,
+            HttpContext ctx) => GetStoreRecordsByCollection(storeName, Empty, reader, ctx)
+        );
+        app.MapGet("/api/db/store/{storeName}/collections/{collection}", GetStoreRecordsByCollection);
+        
+        app.MapGet("api/db/store/{storeName}/records/{recordId}", GetStoreRecord);
         
         return app;
     }
     
     private static async Task<IResult> CreateStore(
         [FromBody] CreateStoreRequest request,
-        [FromServices] AppDbContext db,
+        [FromServices] StoreWriter writer,
         HttpContext ctx)
     {
-        await new StoreBuilder(db)
-            .WithName(request.NameIdentifier)
-            .WithTenantId(ctx.GetTenantId())
-            .Build();
+        await writer
+            .WithStoreId(new StoreId(request.NameIdentifier, ctx.GetTenantId()))
+            .Execute(ctx.RequestAborted);
         return Results.Created();
     }
 
     private static async Task<IResult> AddRecordToStore(
-        [FromRoute(Name = nameof(storeId))] string storeId,
+        [FromRoute(Name = nameof(storeName))] string storeName,
         [FromBody] List<AddRecordToStore> request,
-        [FromServices] AppDbContext db,
+        [FromServices] StoreWriter writer,
         HttpContext ctx)
     {
-        await new StoreBuilder(db)
-            .WithName(storeId)
-            .WithTenantId(ctx.GetTenantId())
+        await writer
+            .WithStoreId(new StoreId(storeName, ctx.GetTenantId()))
             .WithRecords(request)
-            .Build();
+            .Execute(ctx.RequestAborted);
         return Results.Created();
     }
 
-    private static async Task<IResult> GetStoreRecordsByCollection(
-        [FromRoute(Name = nameof(storeId))] string storeId,
-        [FromRoute(Name = nameof(collection))] string collection,
-        [FromServices] AppDbContext db,
+    private static async Task<IResult> GetAllStoreRecords(
+        [FromRoute(Name = nameof(storeName))] string storeName,
+        [FromServices] StoreReader reader,
         HttpContext ctx)
     {
-        var tableName = StoreBuilder.BuildStoreTableName(ctx.GetTenantId(), storeId);
-        await using var connection = new SqliteConnection(db.Database.GetDbConnection().ConnectionString);
-        await connection.OpenAsync();
-        
-        var records = await connection.QueryAsync<string>(
-            $"select payload from '{tableName}' where collection=@collection", 
-            new { collection = IsNullOrWhiteSpace(collection) ? Empty : collection });
-
-        return Results.Ok(records.Select(x => Deserialize<JsonObject>(x)));
+        var records = await reader
+            .All(new StoreId(storeName, ctx.GetTenantId()), ctx.RequestAborted);
+        return Results.Ok(records);
+    }
+    
+    private static async Task<IResult> GetStoreRecordsByCollection(
+        [FromRoute(Name = nameof(storeName))] string storeName,
+        [FromRoute(Name = nameof(collection))] string collection,
+        [FromServices] StoreReader reader,
+        HttpContext ctx)
+    {
+        var records = await reader
+            .ByCollection(new StoreId(storeName, ctx.GetTenantId()), collection, ctx.RequestAborted);
+        return Results.Ok(records);
     }
     
     private static async Task<IResult> GetStoreRecord(
-        [FromRoute(Name = nameof(storeId))] string storeId,
+        [FromRoute(Name = nameof(storeName))] string storeName,
         [FromRoute(Name = nameof(recordId))] string recordId,
-        [FromServices] AppDbContext db,
+        [FromServices] StoreReader reader,
         HttpContext ctx)
     {
-        var tableName = StoreBuilder.BuildStoreTableName(ctx.GetTenantId(), storeId);
-        await using var connection = new SqliteConnection(db.Database.GetDbConnection().ConnectionString);
-        await connection.OpenAsync();
-
-        var result = await connection.QueryFirstOrDefaultAsync<string>(
-            $"select payload from '{tableName}' where id=@id", 
-            new { id = recordId });
-        
-        return IsNullOrWhiteSpace(result) 
+        var maybeRecord = await reader
+            .ByRecordId(new StoreId(storeName, ctx.GetTenantId()), recordId, ctx.RequestAborted);
+        return maybeRecord is null
             ? Results.NotFound() 
-            : Results.Ok(Deserialize<JsonObject>(result));
+            : Results.Ok(maybeRecord);
     }
 }
 
