@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyOwnDb.Server", "MyOwnDb.Server\MyOwnDb.Server.csproj", "{DACF729C-B00F-433F-A1DC-F65613C92AF4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyOwnDb.Server", "MyOwnDb.Server\MyOwnDb.Server.csproj", "{F4B3C520-2F47-459C-AAEA-A5D6F0F36424}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -14,9 +14,9 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{DACF729C-B00F-433F-A1DC-F65613C92AF4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DACF729C-B00F-433F-A1DC-F65613C92AF4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DACF729C-B00F-433F-A1DC-F65613C92AF4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DACF729C-B00F-433F-A1DC-F65613C92AF4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F4B3C520-2F47-459C-AAEA-A5D6F0F36424}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F4B3C520-2F47-459C-AAEA-A5D6F0F36424}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F4B3C520-2F47-459C-AAEA-A5D6F0F36424}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F4B3C520-2F47-459C-AAEA-A5D6F0F36424}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
