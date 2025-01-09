@@ -49,7 +49,7 @@ public class StoreReader(AppDbContext db)
         await using var connection = new SqliteConnection(db.Database.GetDbConnection().ConnectionString);
         await connection.OpenAsync(ct);
 
-        var result = await connection.QueryFirstOrDefaultAsync<string>(
+        var result = await connection.QueryAsync<string>(
             sql: $"""
                   select 
                       payload, 
@@ -58,7 +58,7 @@ public class StoreReader(AppDbContext db)
                   where to_match=@to_match
                   """, 
             param: new { to_match = value });
-
-        return [];
+        
+        return result.Select(x => JsonSerializer.Deserialize<JsonObject>(x)!).ToList() ?? [];
     }
 }

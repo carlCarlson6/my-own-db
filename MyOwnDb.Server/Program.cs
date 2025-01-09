@@ -1,5 +1,6 @@
 using MyOwnDb.Server;
 using MyOwnDb.Server.Stores;
+using MyOwnDb.Server.Stores.Query;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,21 +9,24 @@ builder.Services
     .AddSwaggerGen()
     .AddTransient<AppDbContext>()
     .AddTransient<StoreWriter>()
-    .AddTransient<StoreReader>();
+    .AddTransient<StoreReader>()
+    .AddTransient<QueryBuilder>();
 
-var app = builder.Build();
+var webApp = builder.Build();
 
-if (app.Environment.IsDevelopment())
+if (webApp.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    webApp.UseSwagger();
+    webApp.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+webApp.UseHttpsRedirection();
 
-app.MapStore();
+webApp
+    .MapStore()
+    .MapQueryStore();
 
-app.Run();
+webApp.Run();
 
 internal static class HttpContextExtensions
 {
