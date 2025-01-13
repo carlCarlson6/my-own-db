@@ -1,6 +1,8 @@
 using MyOwnDb.Server;
 using MyOwnDb.Server.Stores;
-using MyOwnDb.Server.Stores.Query;
+using MyOwnDb.Server.Stores.Read;
+using MyOwnDb.Server.Stores.Read.Query;
+using MyOwnDb.Server.Stores.Write;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,8 +25,7 @@ if (webApp.Environment.IsDevelopment())
 webApp.UseHttpsRedirection();
 
 webApp
-    .MapStore()
-    .MapQueryStore();
+    .MapStore();
 
 webApp.Run();
 

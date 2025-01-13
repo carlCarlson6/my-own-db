@@ -1,4 +1,4 @@
-namespace MyOwnDb.Server.Stores.Query;
+namespace MyOwnDb.Server.Stores.Read.Query;
 
 public record QueryFilterOperation(FilterOperationType Type, string? Path, object? Value, List<string>? Values)
 {

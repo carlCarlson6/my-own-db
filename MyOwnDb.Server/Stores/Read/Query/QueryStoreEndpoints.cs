@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json.Linq;
 
-namespace MyOwnDb.Server.Stores.Query;
+namespace MyOwnDb.Server.Stores.Read.Query;
 
 public static class QueryStoreEndpoints
 {

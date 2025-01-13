@@ -3,7 +3,7 @@ using Dapper;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 
-namespace MyOwnDb.Server.Stores;
+namespace MyOwnDb.Server.Stores.Write;
 
 public class StoreWriter(AppDbContext db)
 {
@@ -26,8 +26,9 @@ public class StoreWriter(AppDbContext db)
     {
         if (_storeId is null)
             throw new InvalidOperationException("invalid store id");
-        
-        await using var connection = new SqliteConnection(db.Database.GetDbConnection().ConnectionString);
+
+        var connectionStr = db.Database.GetDbConnection().ConnectionString;
+        await using var connection = new SqliteConnection(connectionStr);
         await connection.OpenAsync(ct);
         await using var transaction = await connection.BeginTransactionAsync(ct);
         

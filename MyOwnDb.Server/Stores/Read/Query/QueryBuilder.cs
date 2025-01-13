@@ -2,12 +2,10 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Dapper;
-using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json.Linq;
 
-namespace MyOwnDb.Server.Stores.Query;
+namespace MyOwnDb.Server.Stores.Read.Query;
 
 public class QueryBuilder(AppDbContext db)
 {

@@ -5,7 +5,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using static System.String;
 
-namespace MyOwnDb.Server.Stores;
+namespace MyOwnDb.Server.Stores.Read;
 
 public class StoreReader(AppDbContext db)
 {
